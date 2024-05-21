@@ -18,7 +18,7 @@ namespace SpaceRace
     {
         Rectangle player1 = new Rectangle(200, 400, 20, 30);
         Rectangle player2 = new Rectangle(500, 400, 20, 30);
-        
+
         int playerSpeed = 6;
         int starSpeed = 4;
         int planetSpeed = 2;
@@ -27,8 +27,6 @@ namespace SpaceRace
         bool downPressed = false;
         bool wPressed = false;
         bool sPressed = false;
-
-        int startScreen = 0;
 
         List<Rectangle> stars = new List<Rectangle>();
         List<Rectangle> planets = new List<Rectangle>();
@@ -39,14 +37,28 @@ namespace SpaceRace
         SolidBrush limeBrush = new SolidBrush(Color.LimeGreen);
         SolidBrush whiteBrush = new SolidBrush(Color.White);
         SolidBrush yellowBrush = new SolidBrush(Color.Yellow);
-        
+
         Random randGen = new Random();
         int randValue = 0;
         public spaceRace()
         {
             InitializeComponent();
+            InitializeGame();
         }
 
+        public void InitializeGame()
+        {
+            startLabel.Text = "";
+            gameTimer.Enabled = true;
+
+            //score = 0
+            // time = 0
+
+            planets.Clear();
+            planetSizes.Clear();
+
+
+        }
         private void spaceRace_Click(object sender, EventArgs e)
         {
             startLabel.Text += "Game staring in 3";
@@ -66,20 +78,28 @@ namespace SpaceRace
 
             gameTimer.Enabled = true;
             gameTimer.Start();
-
-            startScreen++;
         }
 
         private void spaceRace_Paint(object sender, PaintEventArgs e)
         {
-            if (startScreen == 1)
+            if (gameTimer.Enabled == false)
             {
-                
+                startLabel.Text = "Press Space to Start or Esc to Exit";
+            }
+
+            else if (gameTimer.Enabled == true)
+            {
+
                 for (int i = 0; i < stars.Count(); i++)
                 {
                     e.Graphics.FillRectangle(whiteBrush, stars[i]);
                 }
-
+                for (int i = 0; i < planets.Count; i++)
+                {
+                    e.Graphics.FillEllipse(yellowBrush, planets[i]);
+                }
+                
+                    
                 e.Graphics.FillRectangle(limeBrush, player1);
                 e.Graphics.FillRectangle(limeBrush, player2);
             }
@@ -103,6 +123,7 @@ namespace SpaceRace
                     sPressed = false;
                     break;
 
+
             }
         }
 
@@ -122,7 +143,18 @@ namespace SpaceRace
                 case Keys.S:
                     sPressed = true;
                     break;
-
+                case Keys.Escape:
+                    if (gameTimer.Enabled == false)
+                    {
+                        Application.Exit();
+                    }
+                    break;
+                case Keys.Space:
+                    if (gameTimer.Enabled == true)
+                    {
+                        InitializeGame();
+                    }
+                    break;
             }
         }
 
@@ -130,7 +162,7 @@ namespace SpaceRace
         {
             movePLayers();
 
-            
+
 
             //playerInteractions();
 
@@ -156,8 +188,6 @@ namespace SpaceRace
 
             gameTimer.Enabled = true;
             gameTimer.Start();
-
-            startScreen++;
         }
 
         public void movePLayers()
@@ -194,13 +224,13 @@ namespace SpaceRace
                 stars[i] = new Rectangle(x, stars[i].Y, starSize, starSize);
             }
 
-            if (startScreen <= 1)
+            if (gameTimer.Enabled == true)
             {
                 for (int i = 0; i < planets.Count; i++)
                 {
                     int x = planets[i].X + planetSpeed;
 
-                    stars[i] = new Rectangle(x, stars[i].Y, starSize, starSize);
+                    planets[i] = new Rectangle(x, planets[i].Y, planetSizes[i], planetSizes[i]);
                 }
             }
         }
@@ -211,12 +241,21 @@ namespace SpaceRace
 
             if (randValue >= 30)
             {
-                randValue = randGen.Next(0, this.Height );
+                randValue = randGen.Next(0, this.Height);
 
                 Rectangle projectile = new Rectangle(0, randValue, starSize, starSize);
                 stars.Add(projectile);
+            }
+            if (randValue >= 75)
+            {
+                randValue = randGen.Next(0, this.Height);
 
-
+                for (int i = 0; i < planets.Count; i++)
+                {
+                    Rectangle planet = new Rectangle(0, randValue, planetSizes[i], planetSizes[i]);
+                    planets.Add(planet);
+                    planetSizes.Add(randGen.Next(10, 30));
+                }
             }
         }
 
@@ -229,6 +268,15 @@ namespace SpaceRace
                 {
                     stars.RemoveAt(i);
                 }
+            }
+            for (int i = 0; i < planets.Count; i++)
+            {
+                if (planets[i].X > this.Width)
+                {
+                    planets.RemoveAt(i);
+                    planetSizes.RemoveAt(i);
+                }
+
             }
         }
 
